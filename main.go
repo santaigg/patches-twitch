@@ -81,7 +81,7 @@ func main() {
 			log.Printf("res body: %s", string(resBody))
 			stats := MatchmakingData{}
 			json.Unmarshal(resBody, &stats)
-			twitchMessage := fmt.Sprintf("Season Ranked Matches: %d Season Ranked Wins: %d", stats.Response.Payload.Data.RankedMatchesPlayedCount, stats.Response.Payload.Data.RankedMatchesWonCount)
+			twitchMessage := fmt.Sprintf("Solo Season Ranked Matches: %d Solo Season Ranked Wins: %d", stats.Response.Payload.Data.RankedMatchesPlayedCount, stats.Response.Payload.Data.RankedMatchesWonCount)
 			client.Reply(message.Channel, message.ID, twitchMessage)
 		}
 	})
