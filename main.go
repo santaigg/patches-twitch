@@ -110,6 +110,9 @@ func main() {
 				playerId = strings.Split(message.Message, ":")[1]
 				playerId = strings.TrimSpace(playerId)
 			}
+			if message.Channel == "moepork" {
+				playerId = "39F848C1-A9A5-42DF-81AA-033191455DAA"
+			}
 			player := GetPlayerMatchmakingDataBody{
 				PlayerId: playerId,
 			}
@@ -142,7 +145,7 @@ func main() {
 		}
 	})
 
-	client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs")
+	client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork")
 
 	app := fiber.New()
 
