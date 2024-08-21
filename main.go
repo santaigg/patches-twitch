@@ -100,6 +100,12 @@ func main() {
 			if message.Channel == "staycationtg" {
 				playerId = "F0CD9516-6DFB-4235-8E04-32D6B820754C"
 			}
+			if message.Channel == "bugzvii" {
+				playerId = "30C3E8E8-B5A4-4461-B77C-567B9B3C762D"
+			}
+			if message.Channel == "steazecs" {
+				playerId = "BCD9F729-DA28-4802-8CF6-DE831B852D62"
+			}
 			if message.Channel == "limitediq__" {
 				playerId = strings.Split(message.Message, ":")[1]
 				playerId = strings.TrimSpace(playerId)
@@ -136,7 +142,7 @@ func main() {
 		}
 	})
 
-	client.Join("truo", "limitediq__", "staycationtg", "ethos")
+	client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs")
 
 	app := fiber.New()
 
