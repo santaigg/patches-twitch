@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"net/http"
 	"os"
 	"strings"
@@ -140,10 +139,10 @@ func main() {
 			json.Unmarshal(resBody, &stats)
 			rank, rankPrs := soloRanks[stats.Response.Payload.Data.CurrentSoloRank]
 			if rankPrs {
-				twitchMessage := fmt.Sprintf("[Solo Rank]: %s [Solo Season Ranked Wins]: %d/%d games (%f%%)", rank, stats.Response.Payload.Data.RankedMatchesWonCount, stats.Response.Payload.Data.RankedMatchesPlayedCount, math.Round(float64(stats.Response.Payload.Data.RankedMatchesWonCount)/float64(stats.Response.Payload.Data.RankedMatchesPlayedCount)))
+				twitchMessage := fmt.Sprintf("[Solo Rank]: %s [Solo Season Ranked Wins]: %d/%d games (%.1f%%)", rank, stats.Response.Payload.Data.RankedMatchesWonCount, stats.Response.Payload.Data.RankedMatchesPlayedCount, (float64(stats.Response.Payload.Data.RankedMatchesWonCount) / float64(stats.Response.Payload.Data.RankedMatchesPlayedCount) * 100))
 				client.Reply(message.Channel, message.ID, twitchMessage)
 			} else {
-				twitchMessage := fmt.Sprintf("[Solo Rank]: Unranked [Solo Season Ranked Wins]: %d/%d games (%f%%)", stats.Response.Payload.Data.RankedMatchesWonCount, stats.Response.Payload.Data.RankedMatchesPlayedCount, math.Round(float64(stats.Response.Payload.Data.RankedMatchesWonCount)/float64(stats.Response.Payload.Data.RankedMatchesPlayedCount)))
+				twitchMessage := fmt.Sprintf("[Solo Rank]: Unranked [Solo Season Ranked Wins]: %d/%d games (%.1f%%)", stats.Response.Payload.Data.RankedMatchesWonCount, stats.Response.Payload.Data.RankedMatchesPlayedCount, (float64(stats.Response.Payload.Data.RankedMatchesWonCount) / float64(stats.Response.Payload.Data.RankedMatchesPlayedCount) * 100))
 				client.Reply(message.Channel, message.ID, twitchMessage)
 			}
 		}
