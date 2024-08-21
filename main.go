@@ -89,7 +89,7 @@ func main() {
 		29: "Champion"}
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
 		fmt.Println(message.Channel + " :: " + message.User.DisplayName + " : " + message.Message)
-		if message.Message == "!spectrestats" {
+		if strings.Contains(message.Message, "!spectrestats") {
 			var playerId string
 			if message.Channel == "ethos" {
 				playerId = "E27C1FD1-4EEB-483D-952D-A7C904869509"
