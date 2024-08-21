@@ -87,10 +87,20 @@ func main() {
 		28: "Diamond 4",
 		29: "Champion"}
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
-		fmt.Println(message.User.DisplayName + " : " + message.Message)
+		fmt.Println(message.Channel + " :: " + message.User.DisplayName + " : " + message.Message)
 		if message.Message == "!spectrestats" {
+			var playerId string
+			if message.Channel == "ethos" {
+				playerId = "E27C1FD1-4EEB-483D-952D-A7C904869509"
+			}
+			if message.Channel == "truo" {
+				playerId = "8D02F2C0-69B8-4CEE-9656-2D0866B44E9B"
+			}
+			if message.Channel == "staycationtg" {
+				playerId = "F0CD9516-6DFB-4235-8E04-32D6B820754C"
+			}
 			player := GetPlayerMatchmakingDataBody{
-				PlayerId: "8D02F2C0-69B8-4CEE-9656-2D0866B44E9B",
+				PlayerId: playerId,
 			}
 			// marshall data to json (like json_encode)
 			playerBody, err := json.Marshal(player)
