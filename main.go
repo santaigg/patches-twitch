@@ -56,7 +56,36 @@ func main() {
 	// JoinChannel := make(chan string)
 	TWITCH_KEY := os.Getenv("TWITCH_KEY")
 	client := twitch.NewClient("Santaigg", TWITCH_KEY)
-
+	soloRanks := map[int]string{
+		1:  "Bronze 1",
+		2:  "Bronze 2",
+		3:  "Bronze 3",
+		4:  "Bronze 4",
+		5:  "Silver 1",
+		6:  "Silver 2",
+		7:  "Silver 3",
+		8:  "Silver 4",
+		9:  "Gold 1",
+		10: "Gold 2",
+		11: "Gold 3",
+		12: "Gold 4",
+		13: "Platinum 1",
+		14: "Platinum 2",
+		15: "Platinum 3",
+		16: "Platinum 4",
+		17: "Emerald 1",
+		18: "Emerald 2",
+		19: "Emerald 3",
+		20: "Emerald 4",
+		21: "Ruby 1",
+		22: "Ruby 2",
+		23: "Ruby 3",
+		24: "Ruby 4",
+		25: "Diamond 1",
+		26: "Diamond 2",
+		27: "Diamond 3",
+		28: "Diamond 4",
+		29: "Champion"}
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
 		fmt.Println(message.User.DisplayName + " : " + message.Message)
 		if message.Message == "!spectrestats" {
@@ -81,8 +110,14 @@ func main() {
 			log.Printf("res body: %s", string(resBody))
 			stats := MatchmakingData{}
 			json.Unmarshal(resBody, &stats)
-			twitchMessage := fmt.Sprintf("Solo Season Ranked Matches: %d Solo Season Ranked Wins: %d", stats.Response.Payload.Data.RankedMatchesPlayedCount, stats.Response.Payload.Data.RankedMatchesWonCount)
-			client.Reply(message.Channel, message.ID, twitchMessage)
+			rank, rankPrs := soloRanks[stats.Response.Payload.Data.CurrentSoloRank]
+			if rankPrs {
+				twitchMessage := fmt.Sprintf("[Solo Rank]: %s [Solo Season Ranked Matches]: %d [Solo Season Ranked Wins]: %d", rank, stats.Response.Payload.Data.RankedMatchesPlayedCount, stats.Response.Payload.Data.RankedMatchesWonCount)
+				client.Reply(message.Channel, message.ID, twitchMessage)
+			} else {
+				twitchMessage := fmt.Sprintf("Solo Rank: Unranked Solo Season Ranked Matches: %d Solo Season Ranked Wins: %d", stats.Response.Payload.Data.RankedMatchesPlayedCount, stats.Response.Payload.Data.RankedMatchesWonCount)
+				client.Reply(message.Channel, message.ID, twitchMessage)
+			}
 		}
 	})
 
