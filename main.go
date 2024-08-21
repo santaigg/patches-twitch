@@ -102,6 +102,7 @@ func main() {
 			}
 			if message.Channel == "limitediq__" {
 				playerId = strings.Split(message.Message, ":")[1]
+				playerId = strings.TrimSpace(playerId)
 			}
 			player := GetPlayerMatchmakingDataBody{
 				PlayerId: playerId,
