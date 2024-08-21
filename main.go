@@ -136,10 +136,10 @@ func main() {
 			json.Unmarshal(resBody, &stats)
 			rank, rankPrs := soloRanks[stats.Response.Payload.Data.CurrentSoloRank]
 			if rankPrs {
-				twitchMessage := fmt.Sprintf("[Solo Rank]: %s [Solo Season Ranked Matches]: %d [Solo Season Ranked Wins]: %d", rank, stats.Response.Payload.Data.RankedMatchesPlayedCount, stats.Response.Payload.Data.RankedMatchesWonCount)
+				twitchMessage := fmt.Sprintf("[Solo Rank]: %s [Solo Season Ranked Wins]: %d/%d games", rank, stats.Response.Payload.Data.RankedMatchesPlayedCount, stats.Response.Payload.Data.RankedMatchesWonCount)
 				client.Reply(message.Channel, message.ID, twitchMessage)
 			} else {
-				twitchMessage := fmt.Sprintf("Solo Rank: Unranked Solo Season Ranked Matches: %d Solo Season Ranked Wins: %d", stats.Response.Payload.Data.RankedMatchesPlayedCount, stats.Response.Payload.Data.RankedMatchesWonCount)
+				twitchMessage := fmt.Sprintf("[Solo Rank]: Unranked [Solo Season Ranked Wins]: %d/%d total games", stats.Response.Payload.Data.RankedMatchesPlayedCount, stats.Response.Payload.Data.RankedMatchesWonCount)
 				client.Reply(message.Channel, message.ID, twitchMessage)
 			}
 		}
