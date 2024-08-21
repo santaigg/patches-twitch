@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/gofiber/fiber/v2"
@@ -98,6 +99,9 @@ func main() {
 			}
 			if message.Channel == "staycationtg" {
 				playerId = "F0CD9516-6DFB-4235-8E04-32D6B820754C"
+			}
+			if message.Channel == "limitediq__" {
+				playerId = strings.Split(message.Message, ":")[1]
 			}
 			player := GetPlayerMatchmakingDataBody{
 				PlayerId: playerId,
