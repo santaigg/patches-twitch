@@ -136,7 +136,7 @@ func main() {
 		}
 	})
 
-	client.Join("truo", "limitediq__")
+	client.Join("truo", "limitediq__", "staycationtg", "ethos")
 
 	app := fiber.New()
 
