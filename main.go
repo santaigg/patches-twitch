@@ -116,6 +116,9 @@ func main() {
 			if message.Channel == "relyks" {
 				playerId = "DC5D1993-5B94-4F0C-8F57-DB51B0DAE7F1"
 			}
+			if message.Channel == "shroud" {
+				playerId = "0FCF5882-53A8-42D4-9956-333A727BE9D6"
+			}
 			player := GetPlayerMatchmakingDataBody{
 				PlayerId: playerId,
 			}
@@ -148,7 +151,7 @@ func main() {
 		}
 	})
 
-	client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "relyks")
+	client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "relyks", "shroud")
 
 	app := fiber.New()
 
