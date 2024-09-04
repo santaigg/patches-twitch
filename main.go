@@ -22,6 +22,10 @@ type GetPlayerMatchmakingDataBody struct {
 	PlayerId string `json:"playerId"`
 }
 
+type GetPlayerCrewData struct {
+	PlayerId string `json:"playerId"`
+}
+
 type MatchmakingData struct {
 	SequenceNumber int `json:"sequenceNumber"`
 	Response       struct {
@@ -51,42 +55,53 @@ type MatchmakingData struct {
 	} `json:"response"`
 }
 
+type PlayerCrewData struct {
+	PlayerID            string `json:"playerId"`
+	PlayerDisplayName   string `json:"playerDisplayName"`
+	PlayerDiscriminator string `json:"playerDiscriminator"`
+	PlayerCrewScore     string `json:"playerCrewScore"`
+	CrewID              string `json:"crewId"`
+	CrewTotalScore      string `json:"crewTotalScore"`
+	CrewDivisionType    string `json:"crewDivisionType"`
+	CrewDivisionRank    int    `json:"crewDivisionRank"`
+}
+
 func main() {
 	//client := twitch.NewAnonymousClient()
 
 	// JoinChannel := make(chan string)
 	TWITCH_KEY := os.Getenv("TWITCH_KEY")
 	client := twitch.NewClient("Santaigg", TWITCH_KEY)
-	soloRanks := map[int]string{
-		1:  "Bronze 1",
-		2:  "Bronze 2",
-		3:  "Bronze 3",
-		4:  "Bronze 4",
-		5:  "Silver 1",
-		6:  "Silver 2",
-		7:  "Silver 3",
-		8:  "Silver 4",
-		9:  "Gold 1",
-		10: "Gold 2",
-		11: "Gold 3",
-		12: "Gold 4",
-		13: "Platinum 1",
-		14: "Platinum 2",
-		15: "Platinum 3",
-		16: "Platinum 4",
-		17: "Emerald 1",
-		18: "Emerald 2",
-		19: "Emerald 3",
-		20: "Emerald 4",
-		21: "Ruby 1",
-		22: "Ruby 2",
-		23: "Ruby 3",
-		24: "Ruby 4",
-		25: "Diamond 1",
-		26: "Diamond 2",
-		27: "Diamond 3",
-		28: "Diamond 4",
-		29: "Champion"}
+	// soloRanks := map[int]string{
+	// 	1:  "Bronze 1",
+	// 	2:  "Bronze 2",
+	// 	3:  "Bronze 3",
+	// 	4:  "Bronze 4",
+	// 	5:  "Silver 1",
+	// 	6:  "Silver 2",
+	// 	7:  "Silver 3",
+	// 	8:  "Silver 4",
+	// 	9:  "Gold 1",
+	// 	10: "Gold 2",
+	// 	11: "Gold 3",
+	// 	12: "Gold 4",
+	// 	13: "Platinum 1",
+	// 	14: "Platinum 2",
+	// 	15: "Platinum 3",
+	// 	16: "Platinum 4",
+	// 	17: "Emerald 1",
+	// 	18: "Emerald 2",
+	// 	19: "Emerald 3",
+	// 	20: "Emerald 4",
+	// 	21: "Ruby 1",
+	// 	22: "Ruby 2",
+	// 	23: "Ruby 3",
+	// 	24: "Ruby 4",
+	// 	25: "Diamond 1",
+	// 	26: "Diamond 2",
+	// 	27: "Diamond 3",
+	// 	28: "Diamond 4",
+	// 	29: "Champion"}
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
 		fmt.Println(message.Channel + " :: " + message.User.DisplayName + " : " + message.Message)
 		if strings.Contains(message.Message, "!spectrestats") {
@@ -119,7 +134,39 @@ func main() {
 			if message.Channel == "shroud" {
 				playerId = "0FCF5882-53A8-42D4-9956-333A727BE9D6"
 			}
-			player := GetPlayerMatchmakingDataBody{
+
+			// Previous GetPlayerMatchmakingDataBody ****
+
+			// player := GetPlayerMatchmakingDataBody{
+			// 	PlayerId: playerId,
+			// }
+			// // marshall data to json (like json_encode)
+			// playerBody, err := json.Marshal(player)
+			// if err != nil {
+			// 	log.Fatalf("impossible to marshall player: %s", err)
+			// }
+			// resp, err := http.Post("https://collective-production.up.railway.app/dev-getPlayerMatchmakingData", "application/json", bytes.NewReader(playerBody))
+			// if err != nil {
+			// 	log.Fatalf("Couldn't get player matchmaking data for: %s", player.PlayerId)
+			// }
+			// defer resp.Body.Close()
+			// // read body
+			// resBody, err := io.ReadAll(resp.Body)
+			// if err != nil {
+			// 	log.Fatalf("impossible to read all body of response: %s", err)
+			// }
+			// log.Printf("res body: %s", string(resBody))
+			// stats := MatchmakingData{}
+			// json.Unmarshal(resBody, &stats)
+			// rank, rankPrs := soloRanks[stats.Response.Payload.Data.CurrentSoloRank]
+			// if rankPrs {
+			// 	twitchMessage := fmt.Sprintf("[Solo Rank]: %s [Solo Season Ranked Wins]: %d/%d games (%.1f%%)", rank, stats.Response.Payload.Data.RankedMatchesWonCount, stats.Response.Payload.Data.RankedMatchesPlayedCount, (float64(stats.Response.Payload.Data.RankedMatchesWonCount) / float64(stats.Response.Payload.Data.RankedMatchesPlayedCount) * 100))
+			// 	client.Reply(message.Channel, message.ID, twitchMessage)
+			// } else {
+			// 	twitchMessage := fmt.Sprintf("[Solo Rank]: Unranked [Solo Season Ranked Wins]: %d/%d games (%.1f%%)", stats.Response.Payload.Data.RankedMatchesWonCount, stats.Response.Payload.Data.RankedMatchesPlayedCount, (float64(stats.Response.Payload.Data.RankedMatchesWonCount) / float64(stats.Response.Payload.Data.RankedMatchesPlayedCount) * 100))
+			// 	client.Reply(message.Channel, message.ID, twitchMessage)
+			// }
+			player := GetPlayerCrewData{
 				PlayerId: playerId,
 			}
 			// marshall data to json (like json_encode)
@@ -127,7 +174,7 @@ func main() {
 			if err != nil {
 				log.Fatalf("impossible to marshall player: %s", err)
 			}
-			resp, err := http.Post("https://collective-production.up.railway.app/dev-getPlayerMatchmakingData", "application/json", bytes.NewReader(playerBody))
+			resp, err := http.Post("https://collective-production.up.railway.app/getPlayerCrewData", "application/json", bytes.NewReader(playerBody))
 			if err != nil {
 				log.Fatalf("Couldn't get player matchmaking data for: %s", player.PlayerId)
 			}
@@ -138,16 +185,10 @@ func main() {
 				log.Fatalf("impossible to read all body of response: %s", err)
 			}
 			log.Printf("res body: %s", string(resBody))
-			stats := MatchmakingData{}
+			stats := PlayerCrewData{}
 			json.Unmarshal(resBody, &stats)
-			rank, rankPrs := soloRanks[stats.Response.Payload.Data.CurrentSoloRank]
-			if rankPrs {
-				twitchMessage := fmt.Sprintf("[Solo Rank]: %s [Solo Season Ranked Wins]: %d/%d games (%.1f%%)", rank, stats.Response.Payload.Data.RankedMatchesWonCount, stats.Response.Payload.Data.RankedMatchesPlayedCount, (float64(stats.Response.Payload.Data.RankedMatchesWonCount) / float64(stats.Response.Payload.Data.RankedMatchesPlayedCount) * 100))
-				client.Reply(message.Channel, message.ID, twitchMessage)
-			} else {
-				twitchMessage := fmt.Sprintf("[Solo Rank]: Unranked [Solo Season Ranked Wins]: %d/%d games (%.1f%%)", stats.Response.Payload.Data.RankedMatchesWonCount, stats.Response.Payload.Data.RankedMatchesPlayedCount, (float64(stats.Response.Payload.Data.RankedMatchesWonCount) / float64(stats.Response.Payload.Data.RankedMatchesPlayedCount) * 100))
-				client.Reply(message.Channel, message.ID, twitchMessage)
-			}
+			twitchMessage := fmt.Sprintf("[Crew Leaderboard Rank]: %s [Player Crew Score]: %d [Total Crew Score]: %d", stats.CrewDivisionRank, stats.PlayerCrewScore, stats.CrewTotalScore)
+			client.Reply(message.Channel, message.ID, twitchMessage)
 		}
 	})
 
