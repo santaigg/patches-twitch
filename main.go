@@ -187,7 +187,7 @@ func main() {
 			log.Printf("res body: %s", string(resBody))
 			stats := PlayerCrewData{}
 			json.Unmarshal(resBody, &stats)
-			twitchMessage := fmt.Sprintf("[Crew Leaderboard Rank]: %s [Player Crew Score]: %d [Total Crew Score]: %d", stats.CrewDivisionRank, stats.PlayerCrewScore, stats.CrewTotalScore)
+			twitchMessage := fmt.Sprintf("[Crew Leaderboard Rank]: %d [Player Crew Score]: %s [Total Crew Score]: %s", stats.CrewDivisionRank, stats.PlayerCrewScore, stats.CrewTotalScore)
 			client.Reply(message.Channel, message.ID, twitchMessage)
 		}
 	})
