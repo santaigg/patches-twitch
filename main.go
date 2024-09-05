@@ -106,7 +106,7 @@ func main() {
 	// 	29: "Champion"}
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
 		fmt.Println(message.Channel + " :: " + message.User.DisplayName + " : " + message.Message)
-		if strings.Contains(message.Message, "!spectrestats") {
+		if strings.Contains(message.Message, "!crewstats") {
 			var playerId string
 			if message.Channel == "ethos" {
 				playerId = "E27C1FD1-4EEB-483D-952D-A7C904869509"
@@ -202,6 +202,11 @@ func main() {
 				twitchMessage := fmt.Sprintf("[Crew Division Rank]: %d [Player Crew Score]: %s [Total Crew Score]: %s", stats.CrewDivisionRank, stats.PlayerCrewScore, stats.CrewTotalScore)
 				client.Reply(message.Channel, message.ID, twitchMessage)
 			}
+		}
+
+		if strings.Contains(message.Message, "!spectrestats") {
+			twitchMessage := fmt.Sprintf("Use !crewstats to get %s's crew stats. !spectrestats will be re-implemented when ranked drops on Sept 10th.", message.Channel)
+			client.Reply(message.Channel, message.ID, twitchMessage)
 		}
 	})
 
