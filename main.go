@@ -105,7 +105,7 @@ func main() {
 	// 	28: "Diamond 4",
 	// 	29: "Champion"}
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
-		fmt.Println(message.Channel + " :: " + message.User.DisplayName + " : " + message.Message)
+		fmt.Println(message.Channel + " :: " + message.User.DisplayName + "( " + message.User.ID + " )" + " : " + message.Message)
 		if strings.ToLower(message.User.Name) == "santaigg" || strings.ToLower(message.User.DisplayName) == "santaigg" {
 			return
 		}
