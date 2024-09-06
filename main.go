@@ -290,7 +290,7 @@ func main() {
 		}
 	})
 
-	client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "relyks", "shroud", "iitztimmy", "pieman")
+	client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "relyks", "shroud", "iitztimmy", "pieman", "shrood")
 
 	app := fiber.New()
 
