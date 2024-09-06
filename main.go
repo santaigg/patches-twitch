@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/gofiber/fiber/v2"
@@ -108,6 +109,7 @@ func main() {
 	// 	27: "Diamond 3",
 	// 	28: "Diamond 4",
 	// 	29: "Champion"}
+	var lastCrewDump time.Time
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
 		fmt.Println(message.Channel + " :: " + message.User.DisplayName + "( " + message.User.ID + " )" + " : " + message.Message)
 		if strings.ToLower(message.User.Name) == "santaigg" || strings.ToLower(message.User.DisplayName) == "santaigg" {
@@ -177,12 +179,15 @@ func main() {
 		}
 
 		if strings.Contains(message.Message, "!crewstats") {
-			go func() {
-				_, initErr := http.Get("https://collective-production.up.railway.app/dumpAllCrewsFromDivisionsInDb")
-				if initErr != nil {
-					log.Println("Issue hitting dump ALL crews endpoint...")
-				}
-			}()
+			if hasTimePassed(lastCrewDump, 60*time.Second) {
+				go func() {
+					lastCrewDump = time.Now()
+					_, initErr := http.Get("https://collective-production.up.railway.app/dumpAllCrewsFromDivisionsInDb")
+					if initErr != nil {
+						log.Println("Issue hitting dump ALL crews endpoint...")
+					}
+				}()
+			}
 			var playerId string
 			if message.Channel == "ethos" {
 				playerId = "E27C1FD1-4EEB-483D-952D-A7C904869509"
@@ -285,7 +290,7 @@ func main() {
 		}
 
 		if strings.Contains(message.Message, "!spectrestats") {
-			twitchMessage := fmt.Sprintf("Use !crewstats to get %s's crew stats. !spectrestats will be re-implemented when ranked drops on Sept 10th.", message.Channel)
+			twitchMessage := fmt.Sprintf("Use !crewstats to get %s's crew stats & !mycrewstats to get your own crew stats. !spectrestats will be re-implemented when ranked drops on Sept 10th.", message.Channel)
 			client.Reply(message.Channel, message.ID, twitchMessage)
 		}
 	})
@@ -315,4 +320,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func hasTimePassed(lastSet time.Time, duration time.Duration) bool {
+	return time.Since(lastSet) >= duration
 }
