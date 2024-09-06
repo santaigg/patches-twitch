@@ -204,8 +204,12 @@ func main() {
 				if playerIdReqUnmarshalErr != nil {
 					log.Fatalf("Error while unmarshaling getPlayerIdentityFromTwitchId: %s", playerIdReqUnmarshalErr)
 				}
-
-				playerId = playerIdentity.PlayerId
+				if playerIdentity.PlayerId != "ERROR" {
+					playerId = playerIdentity.PlayerId
+				} else {
+					client.Reply(message.Channel, message.ID, "You must link your Spectre Divide account to Twitch!")
+					return
+				}
 			}
 
 			player := GetPlayerCrewData{
