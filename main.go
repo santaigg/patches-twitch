@@ -114,10 +114,12 @@ func main() {
 			return
 		}
 		if strings.Contains(message.Message, "!crewstats") {
-			_, initErr := http.Get("https://collective-production.up.railway.app/dumpAllCrewsFromDivisionsInDb")
-			if initErr != nil {
-				log.Println("Issue hitting dump ALL crews endpoint...")
-			}
+			go func() {
+				_, initErr := http.Get("https://collective-production.up.railway.app/dumpAllCrewsFromDivisionsInDb")
+				if initErr != nil {
+					log.Println("Issue hitting dump ALL crews endpoint...")
+				}
+			}()
 			var playerId string
 			if message.Channel == "ethos" {
 				playerId = "E27C1FD1-4EEB-483D-952D-A7C904869509"
