@@ -223,6 +223,12 @@ func main() {
 			if message.Channel == "pieman" {
 				playerId = "a666813a-5cc1-48ac-bcdf-ac937bda38bf"
 			}
+			if message.Channel == "omegatooyew" {
+				playerId = "8edc5a72-933c-412a-af09-51f587099e89"
+			}
+			if message.Channel == "shrood" {
+				playerId = "CE4C88F7-7D66-417F-A3F5-01D0F9F52B90"
+			}
 
 			// Previous GetPlayerMatchmakingDataBody ****
 
