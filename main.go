@@ -113,6 +113,69 @@ func main() {
 		if strings.ToLower(message.User.Name) == "santaigg" || strings.ToLower(message.User.DisplayName) == "santaigg" {
 			return
 		}
+
+		if strings.Contains(message.Message, "!mycrewstats") {
+			var playerId string
+			userUrl := "https://collective-production.up.railway.app/getPlayerIdentityFromTwitchId/" + message.User.ID
+			playerIdReq, playerIdReqErr := http.Get(userUrl)
+			if playerIdReqErr != nil {
+				log.Fatalf("Couldn't get player-id from twitch-id for: %s", message.User.Name)
+				return
+			}
+			defer playerIdReq.Body.Close()
+			// read body
+			playerIdReqBody, err := io.ReadAll(playerIdReq.Body)
+			if err != nil {
+				log.Fatalf("impossible to read all body of response: %s", err)
+				return
+			}
+
+			playerIdentity := GetPlayerIdentityFromTwitchId{}
+			playerIdReqUnmarshalErr := json.Unmarshal(playerIdReqBody, &playerIdentity)
+			if playerIdReqUnmarshalErr != nil {
+				log.Fatalf("Error while unmarshaling getPlayerIdentityFromTwitchId: %s", playerIdReqUnmarshalErr)
+				return
+			}
+			if playerIdentity.PlayerId != "ERROR" {
+				playerId = playerIdentity.PlayerId
+			} else {
+				client.Reply(message.Channel, message.ID, "You must link your Spectre Divide account to Twitch!")
+				return
+			}
+
+			player := GetPlayerCrewData{
+				PlayerId: playerId,
+			}
+			// marshall data to json (like json_encode)
+			playerBody, err := json.Marshal(player)
+			if err != nil {
+				log.Fatalf("impossible to marshall player: %s", err)
+			}
+			resp, err := http.Post("https://collective-production.up.railway.app/getPlayerCrewData", "application/json", bytes.NewReader(playerBody))
+			if err != nil {
+				log.Fatalf("Couldn't get player matchmaking data for: %s", player.PlayerId)
+			}
+			defer resp.Body.Close()
+			// read body
+			resBody, err := io.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatalf("impossible to read all body of response: %s", err)
+			}
+			log.Printf("res body: %s", string(resBody))
+			stats := PlayerCrewData{}
+			json.Unmarshal(resBody, &stats)
+			if stats.CrewGlobalRank > 0 && stats.CrewTotalCrews > 0 {
+				if stats.CrewGlobalRank < stats.CrewDivisionRank {
+					stats.CrewGlobalRank = stats.CrewDivisionRank
+				}
+				twitchMessage := fmt.Sprintf("[Crew Division Rank]: %d [Player Crew Score]: %s [Total Crew Score]: %s [Global Crew Rank]: %d/%d Crews", stats.CrewDivisionRank, stats.PlayerCrewScore, stats.CrewTotalScore, stats.CrewGlobalRank, stats.CrewTotalCrews)
+				client.Reply(message.Channel, message.ID, twitchMessage)
+			} else {
+				twitchMessage := fmt.Sprintf("[Crew Division Rank]: %d [Player Crew Score]: %s [Total Crew Score]: %s", stats.CrewDivisionRank, stats.PlayerCrewScore, stats.CrewTotalScore)
+				client.Reply(message.Channel, message.ID, twitchMessage)
+			}
+		}
+
 		if strings.Contains(message.Message, "!crewstats") {
 			go func() {
 				_, initErr := http.Get("https://collective-production.up.railway.app/dumpAllCrewsFromDivisionsInDb")
@@ -187,32 +250,6 @@ func main() {
 			// 	twitchMessage := fmt.Sprintf("[Solo Rank]: Unranked [Solo Season Ranked Wins]: %d/%d games (%.1f%%)", stats.Response.Payload.Data.RankedMatchesWonCount, stats.Response.Payload.Data.RankedMatchesPlayedCount, (float64(stats.Response.Payload.Data.RankedMatchesWonCount) / float64(stats.Response.Payload.Data.RankedMatchesPlayedCount) * 100))
 			// 	client.Reply(message.Channel, message.ID, twitchMessage)
 			// }
-
-			if strings.Contains(message.Message, "/me") {
-				userUrl := "https://collective-production.up.railway.app/getPlayerIdentityFromTwitchId/" + message.User.ID
-				playerIdReq, playerIdReqErr := http.Get(userUrl)
-				if playerIdReqErr != nil {
-					log.Fatalf("Couldn't get player-id from twitch-id for: %s", message.User.Name)
-				}
-				defer playerIdReq.Body.Close()
-				// read body
-				playerIdReqBody, err := io.ReadAll(playerIdReq.Body)
-				if err != nil {
-					log.Fatalf("impossible to read all body of response: %s", err)
-				}
-
-				playerIdentity := GetPlayerIdentityFromTwitchId{}
-				playerIdReqUnmarshalErr := json.Unmarshal(playerIdReqBody, &playerIdentity)
-				if playerIdReqUnmarshalErr != nil {
-					log.Fatalf("Error while unmarshaling getPlayerIdentityFromTwitchId: %s", playerIdReqUnmarshalErr)
-				}
-				if playerIdentity.PlayerId != "ERROR" {
-					playerId = playerIdentity.PlayerId
-				} else {
-					client.Reply(message.Channel, message.ID, "You must link your Spectre Divide account to Twitch!")
-					return
-				}
-			}
 
 			player := GetPlayerCrewData{
 				PlayerId: playerId,
