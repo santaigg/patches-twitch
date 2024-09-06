@@ -110,6 +110,10 @@ func main() {
 			return
 		}
 		if strings.Contains(message.Message, "!crewstats") {
+			_, initErr := http.Get("https://collective-production.up.railway.app/dumpAllCrewsFromDivisionsInDb")
+			if initErr != nil {
+				log.Println("Issue hitting dump ALL crews endpoint...")
+			}
 			var playerId string
 			if message.Channel == "ethos" {
 				playerId = "E27C1FD1-4EEB-483D-952D-A7C904869509"
@@ -177,6 +181,16 @@ func main() {
 			// 	twitchMessage := fmt.Sprintf("[Solo Rank]: Unranked [Solo Season Ranked Wins]: %d/%d games (%.1f%%)", stats.Response.Payload.Data.RankedMatchesWonCount, stats.Response.Payload.Data.RankedMatchesPlayedCount, (float64(stats.Response.Payload.Data.RankedMatchesWonCount) / float64(stats.Response.Payload.Data.RankedMatchesPlayedCount) * 100))
 			// 	client.Reply(message.Channel, message.ID, twitchMessage)
 			// }
+
+			if strings.Contains(message.Message, "/me") {
+				if strings.ToLower(message.User.Name) == "limitediq__" {
+					playerId = "2b940443-58da-45b7-b704-94459a2f9a4d"
+				} else {
+					// Eventually add people to add their own playerids
+					return
+				}
+			}
+
 			player := GetPlayerCrewData{
 				PlayerId: playerId,
 			}
@@ -199,6 +213,9 @@ func main() {
 			stats := PlayerCrewData{}
 			json.Unmarshal(resBody, &stats)
 			if stats.CrewGlobalRank > 0 && stats.CrewTotalCrews > 0 {
+				if stats.CrewGlobalRank < stats.CrewDivisionRank {
+					stats.CrewGlobalRank = stats.CrewDivisionRank
+				}
 				twitchMessage := fmt.Sprintf("[Crew Division Rank]: %d [Player Crew Score]: %s [Total Crew Score]: %s [Global Crew Rank]: %d/%d Crews", stats.CrewDivisionRank, stats.PlayerCrewScore, stats.CrewTotalScore, stats.CrewGlobalRank, stats.CrewTotalCrews)
 				client.Reply(message.Channel, message.ID, twitchMessage)
 			} else {
