@@ -26,6 +26,10 @@ type GetPlayerCrewData struct {
 	PlayerId string `json:"playerId"`
 }
 
+type GetPlayerIdentityFromTwitchId struct {
+	PlayerId string `json:"playerId"`
+}
+
 type MatchmakingData struct {
 	SequenceNumber int `json:"sequenceNumber"`
 	Response       struct {
@@ -183,12 +187,25 @@ func main() {
 			// }
 
 			if strings.Contains(message.Message, "/me") {
-				if strings.ToLower(message.User.Name) == "limitediq__" {
-					playerId = "2b940443-58da-45b7-b704-94459a2f9a4d"
-				} else {
-					// Eventually add people to add their own playerids
-					return
+				userUrl := "https://collective-production.up.railway.app/getPlayerIdentityFromTwitchId/" + message.User.ID
+				playerIdReq, playerIdReqErr := http.Get(userUrl)
+				if playerIdReqErr != nil {
+					log.Fatalf("Couldn't get player-id from twitch-id for: %s", message.User.Name)
 				}
+				defer playerIdReq.Body.Close()
+				// read body
+				playerIdReqBody, err := io.ReadAll(playerIdReq.Body)
+				if err != nil {
+					log.Fatalf("impossible to read all body of response: %s", err)
+				}
+
+				playerIdentity := GetPlayerIdentityFromTwitchId{}
+				playerIdReqUnmarshalErr := json.Unmarshal(playerIdReqBody, &playerIdentity)
+				if playerIdReqUnmarshalErr != nil {
+					log.Fatalf("Error while unmarshaling getPlayerIdentityFromTwitchId: %s", playerIdReqUnmarshalErr)
+				}
+
+				playerId = playerIdentity.PlayerId
 			}
 
 			player := GetPlayerCrewData{
