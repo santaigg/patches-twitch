@@ -13,6 +13,7 @@ import (
 
 	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/gofiber/fiber/v2"
+	"github.com/nicklaw5/helix/v2"
 )
 
 type TwitchChannel struct {
@@ -87,10 +88,29 @@ func main() {
 
 	// JoinChannel := make(chan string)
 	TWITCH_KEY := os.Getenv("TWITCH_KEY")
-	client := twitch.NewClient("Santaigg", TWITCH_KEY)
+	TWITCH_CLIENT_ID := os.Getenv("TWITCH_CLIENT_ID")
+	TWITCH_SECRET := os.Getenv("TWITCH_SECRET")
+	irc_client := twitch.NewClient("Santaigg", TWITCH_KEY)
+	twitch_client, err := helix.NewClient(&helix.Options{
+		ClientID:     TWITCH_CLIENT_ID,
+		ClientSecret: TWITCH_SECRET,
+	})
+	if err != nil {
+		log.Panicf("Issue logging into helix twitch client... %s", err)
+	}
+
+	resp, err := twitch_client.RequestAppAccessToken([]string{"user:read:email"})
+	if err != nil {
+		log.Panicf("Issue getting app access token from helix twitch client... %s", err)
+	}
+
+	fmt.Printf("%+v\n", resp)
+
+	// Set the access token on the client
+	twitch_client.SetAppAccessToken(resp.Data.AccessToken)
 
 	var lastCrewDump time.Time
-	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
+	irc_client.OnPrivateMessage(func(message twitch.PrivateMessage) {
 		fmt.Println(message.Channel + " :: " + message.User.DisplayName + "( " + message.User.ID + " )" + " : " + message.Message)
 		if strings.ToLower(message.User.Name) == "santaigg" || strings.ToLower(message.User.DisplayName) == "santaigg" {
 			return
@@ -98,30 +118,12 @@ func main() {
 
 		if strings.Contains(message.Message, "!mycrewstats") {
 			var playerId string
-			userUrl := "https://collective-production.up.railway.app/getPlayerIdentityFromTwitchId/" + message.User.ID
-			playerIdReq, playerIdReqErr := http.Get(userUrl)
-			if playerIdReqErr != nil {
-				log.Fatalf("Couldn't get player-id from twitch-id for: %s", message.User.Name)
-				return
-			}
-			defer playerIdReq.Body.Close()
-			// read body
-			playerIdReqBody, err := io.ReadAll(playerIdReq.Body)
-			if err != nil {
-				log.Fatalf("impossible to read all body of response: %s", err)
-				return
-			}
+			playerIdReq := getPlayerIdFromTwitchId(message.User.ID)
 
-			playerIdentity := GetPlayerIdentityFromTwitchId{}
-			playerIdReqUnmarshalErr := json.Unmarshal(playerIdReqBody, &playerIdentity)
-			if playerIdReqUnmarshalErr != nil {
-				log.Fatalf("Error while unmarshaling getPlayerIdentityFromTwitchId: %s", playerIdReqUnmarshalErr)
-				return
-			}
-			if playerIdentity.PlayerId != "ERROR" {
-				playerId = playerIdentity.PlayerId
+			if playerIdReq != "ERROR" && playerIdReq != "" {
+				playerId = playerIdReq
 			} else {
-				client.Reply(message.Channel, message.ID, "You must link your Spectre Divide account to Twitch!")
+				irc_client.Reply(message.Channel, message.ID, "You must link your Spectre Divide account to Twitch!")
 				return
 			}
 
@@ -151,10 +153,10 @@ func main() {
 					stats.CrewGlobalRank = stats.CrewDivisionRank
 				}
 				twitchMessage := fmt.Sprintf("[Crew Division Rank]: %d [Player Crew Score]: %s [Total Crew Score]: %s [Global Crew Rank]: %d/%d Crews", stats.CrewDivisionRank, stats.PlayerCrewScore, stats.CrewTotalScore, stats.CrewGlobalRank, stats.CrewTotalCrews)
-				client.Reply(message.Channel, message.ID, twitchMessage)
+				irc_client.Reply(message.Channel, message.ID, twitchMessage)
 			} else {
 				twitchMessage := fmt.Sprintf("[Crew Division Rank]: %d [Player Crew Score]: %s [Total Crew Score]: %s", stats.CrewDivisionRank, stats.PlayerCrewScore, stats.CrewTotalScore)
-				client.Reply(message.Channel, message.ID, twitchMessage)
+				irc_client.Reply(message.Channel, message.ID, twitchMessage)
 			}
 		}
 
@@ -169,45 +171,12 @@ func main() {
 				}()
 			}
 			var playerId string
-			if message.Channel == "ethos" {
-				playerId = "E27C1FD1-4EEB-483D-952D-A7C904869509"
-			}
-			if message.Channel == "truo" {
-				playerId = "8D02F2C0-69B8-4CEE-9656-2D0866B44E9B"
-			}
-			if message.Channel == "staycationtg" {
-				playerId = "F0CD9516-6DFB-4235-8E04-32D6B820754C"
-			}
-			if message.Channel == "bugzvii" {
-				playerId = "30C3E8E8-B5A4-4461-B77C-567B9B3C762D"
-			}
-			if message.Channel == "steazecs" {
-				playerId = "BCD9F729-DA28-4802-8CF6-DE831B852D62"
-			}
-			if message.Channel == "limitediq__" {
-				playerId = strings.Split(message.Message, ":")[1]
-				playerId = strings.TrimSpace(playerId)
-			}
-			if message.Channel == "moepork" {
-				playerId = "39F848C1-A9A5-42DF-81AA-033191455DAA"
-			}
-			if message.Channel == "relyks" {
-				playerId = "DC5D1993-5B94-4F0C-8F57-DB51B0DAE7F1"
-			}
-			if message.Channel == "shroud" {
-				playerId = "CE4C88F7-7D66-417F-A3F5-01D0F9F52B90"
-			}
-			if message.Channel == "iitztimmy" {
-				playerId = "1d36bff3-1ac5-422f-bb21-f6524e0b83a0"
-			}
-			if message.Channel == "pieman" {
-				playerId = "a666813a-5cc1-48ac-bcdf-ac937bda38bf"
-			}
-			if message.Channel == "omegatooyew" {
-				playerId = "8edc5a72-933c-412a-af09-51f587099e89"
-			}
-			if message.Channel == "shrood" {
-				playerId = "CE4C88F7-7D66-417F-A3F5-01D0F9F52B90"
+			playerIdReq := getPlayerIdFromChannel(message.Channel, twitch_client)
+			if playerIdReq != "ERROR" && playerIdReq != "" {
+				playerId = playerIdReq
+			} else {
+				messageReply := fmt.Sprintf("@%s must link their Spectre Divide account to Twitch!", message.Channel)
+				irc_client.Reply(message.Channel, message.ID, messageReply)
 			}
 
 			// Previous GetPlayerMatchmakingDataBody ****
@@ -268,55 +237,24 @@ func main() {
 					stats.CrewGlobalRank = stats.CrewDivisionRank
 				}
 				twitchMessage := fmt.Sprintf("[Crew Division Rank]: %d [Player Crew Score]: %s [Total Crew Score]: %s [Global Crew Rank]: %d/%d Crews", stats.CrewDivisionRank, stats.PlayerCrewScore, stats.CrewTotalScore, stats.CrewGlobalRank, stats.CrewTotalCrews)
-				client.Reply(message.Channel, message.ID, twitchMessage)
+				irc_client.Reply(message.Channel, message.ID, twitchMessage)
 			} else {
 				twitchMessage := fmt.Sprintf("[Crew Division Rank]: %d [Player Crew Score]: %s [Total Crew Score]: %s", stats.CrewDivisionRank, stats.PlayerCrewScore, stats.CrewTotalScore)
-				client.Reply(message.Channel, message.ID, twitchMessage)
+				irc_client.Reply(message.Channel, message.ID, twitchMessage)
 			}
 		}
 
 		if strings.Contains(message.Message, "!rank") {
 			var playerId string
-			if message.Channel == "ethos" {
-				playerId = "E27C1FD1-4EEB-483D-952D-A7C904869509"
+			playerIdReq := getPlayerIdFromChannel(message.Channel, twitch_client)
+			if playerIdReq != "ERROR" && playerIdReq != "" {
+				playerId = playerIdReq
+			} else {
+				messageReply := fmt.Sprintf("@%s must link their Spectre Divide account to Twitch!", message.Channel)
+				irc_client.Reply(message.Channel, message.ID, messageReply)
+				return
 			}
-			if message.Channel == "truo" {
-				playerId = "8D02F2C0-69B8-4CEE-9656-2D0866B44E9B"
-			}
-			if message.Channel == "staycationtg" {
-				playerId = "F0CD9516-6DFB-4235-8E04-32D6B820754C"
-			}
-			if message.Channel == "bugzvii" {
-				playerId = "30C3E8E8-B5A4-4461-B77C-567B9B3C762D"
-			}
-			if message.Channel == "steazecs" {
-				playerId = "BCD9F729-DA28-4802-8CF6-DE831B852D62"
-			}
-			if message.Channel == "limitediq__" {
-				playerId = strings.Split(message.Message, ":")[1]
-				playerId = strings.TrimSpace(playerId)
-			}
-			if message.Channel == "moepork" {
-				playerId = "39F848C1-A9A5-42DF-81AA-033191455DAA"
-			}
-			if message.Channel == "relyks" {
-				playerId = "DC5D1993-5B94-4F0C-8F57-DB51B0DAE7F1"
-			}
-			if message.Channel == "shroud" {
-				playerId = "CE4C88F7-7D66-417F-A3F5-01D0F9F52B90"
-			}
-			if message.Channel == "iitztimmy" {
-				playerId = "1d36bff3-1ac5-422f-bb21-f6524e0b83a0"
-			}
-			if message.Channel == "pieman" {
-				playerId = "a666813a-5cc1-48ac-bcdf-ac937bda38bf"
-			}
-			if message.Channel == "omegatooyew" {
-				playerId = "8edc5a72-933c-412a-af09-51f587099e89"
-			}
-			if message.Channel == "shrood" {
-				playerId = "CE4C88F7-7D66-417F-A3F5-01D0F9F52B90"
-			}
+
 			respUrl := "https://collective-production.up.railway.app/getPlayerRankData/" + playerId
 			resp, err := http.Get(respUrl)
 			if err != nil {
@@ -337,36 +275,18 @@ func main() {
 			}
 
 			twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s  [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getTeamRankFromRankNumber(playerRankData.TeamRank))
-			client.Reply(message.Channel, message.ID, twitchMessage)
+			irc_client.Reply(message.Channel, message.ID, twitchMessage)
 			return
 		}
 
 		if strings.Contains(message.Message, "!myrank") {
 			var playerId string
-			userUrl := "https://collective-production.up.railway.app/getPlayerIdentityFromTwitchId/" + message.User.ID
-			playerIdReq, playerIdReqErr := http.Get(userUrl)
-			if playerIdReqErr != nil {
-				log.Fatalf("Couldn't get player-id from twitch-id for: %s", message.User.Name)
-				return
-			}
-			defer playerIdReq.Body.Close()
-			// read body
-			playerIdReqBody, err := io.ReadAll(playerIdReq.Body)
-			if err != nil {
-				log.Fatalf("impossible to read all body of response: %s", err)
-				return
-			}
+			playerIdReq := getPlayerIdFromTwitchId(message.User.ID)
 
-			playerIdentity := GetPlayerIdentityFromTwitchId{}
-			playerIdReqUnmarshalErr := json.Unmarshal(playerIdReqBody, &playerIdentity)
-			if playerIdReqUnmarshalErr != nil {
-				log.Fatalf("Error while unmarshaling getPlayerIdentityFromTwitchId: %s", playerIdReqUnmarshalErr)
-				return
-			}
-			if playerIdentity.PlayerId != "ERROR" {
-				playerId = playerIdentity.PlayerId
+			if playerIdReq != "ERROR" && playerIdReq != "" {
+				playerId = playerIdReq
 			} else {
-				client.Reply(message.Channel, message.ID, "You must link your Spectre Divide account to Twitch!")
+				irc_client.Reply(message.Channel, message.ID, "You must link your Spectre Divide account to Twitch!")
 				return
 			}
 
@@ -390,17 +310,17 @@ func main() {
 			}
 
 			twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s  [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getTeamRankFromRankNumber(playerRankData.TeamRank))
-			client.Reply(message.Channel, message.ID, twitchMessage)
+			irc_client.Reply(message.Channel, message.ID, twitchMessage)
 			return
 		}
 
 		if strings.Contains(message.Message, "!spectrestats") {
 			twitchMessage := fmt.Sprintf("Use !crewstats to get %s's crew stats & !mycrewstats to get your own crew stats. !spectrestats will be re-implemented when ranked drops on Sept 10th.", message.Channel)
-			client.Reply(message.Channel, message.ID, twitchMessage)
+			irc_client.Reply(message.Channel, message.ID, twitchMessage)
 		}
 	})
 
-	client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "relyks", "shroud", "iitztimmy", "pieman", "shrood", "omegatooyew")
+	irc_client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "relyks", "shroud", "iitztimmy", "pieman", "shrood", "omegatooyew")
 
 	app := fiber.New()
 
@@ -414,14 +334,14 @@ func main() {
 			return err
 		}
 
-		client.Join(channel.Channel)
+		irc_client.Join(channel.Channel)
 
 		return c.SendString("Joined " + channel.Channel)
 	})
 
 	go func() { log.Fatal(app.Listen(":3002")) }()
 
-	err := client.Connect()
+	err = irc_client.Connect()
 	if err != nil {
 		panic(err)
 	}
@@ -505,4 +425,116 @@ func getTeamRankFromRankNumber(rankNumber int) string {
 		33: "Champion"}
 
 	return teamRanks[rankNumber]
+}
+
+func getPlayerIdFromChannel(channel string, client *helix.Client) string {
+	var playerId string
+	if channel == "ethos" {
+		playerId = "E27C1FD1-4EEB-483D-952D-A7C904869509"
+	}
+	if channel == "truo" {
+		playerId = "8D02F2C0-69B8-4CEE-9656-2D0866B44E9B"
+	}
+	if channel == "staycationtg" {
+		playerId = "F0CD9516-6DFB-4235-8E04-32D6B820754C"
+	}
+	if channel == "bugzvii" {
+		playerId = "30C3E8E8-B5A4-4461-B77C-567B9B3C762D"
+	}
+	if channel == "steazecs" {
+		playerId = "BCD9F729-DA28-4802-8CF6-DE831B852D62"
+	}
+	if channel == "moepork" {
+		playerId = "39F848C1-A9A5-42DF-81AA-033191455DAA"
+	}
+	if channel == "relyks" {
+		playerId = "DC5D1993-5B94-4F0C-8F57-DB51B0DAE7F1"
+	}
+	if channel == "shroud" {
+		playerId = "CE4C88F7-7D66-417F-A3F5-01D0F9F52B90"
+	}
+	if channel == "iitztimmy" {
+		playerId = "1d36bff3-1ac5-422f-bb21-f6524e0b83a0"
+	}
+	if channel == "pieman" {
+		playerId = "a666813a-5cc1-48ac-bcdf-ac937bda38bf"
+	}
+	if channel == "omegatooyew" {
+		playerId = "8edc5a72-933c-412a-af09-51f587099e89"
+	}
+	if channel == "shrood" {
+		playerId = "CE4C88F7-7D66-417F-A3F5-01D0F9F52B90"
+	}
+
+	if playerId != "" {
+		return playerId
+	}
+
+	channelId := getTwitchIdFromChannel(channel, client)
+	if channelId == "" {
+		return ""
+	}
+
+	userUrl := "https://collective-production.up.railway.app/getPlayerIdentityFromTwitchId/" + channelId
+	playerIdReq, playerIdReqErr := http.Get(userUrl)
+	if playerIdReqErr != nil {
+		log.Fatalf("Couldn't get player-id from twitch-id for: %s", channelId)
+		return ""
+	}
+	defer playerIdReq.Body.Close()
+	// read body
+	playerIdReqBody, err := io.ReadAll(playerIdReq.Body)
+	if err != nil {
+		log.Fatalf("impossible to read all body of response: %s", err)
+		return ""
+	}
+
+	playerIdentity := GetPlayerIdentityFromTwitchId{}
+	playerIdReqUnmarshalErr := json.Unmarshal(playerIdReqBody, &playerIdentity)
+	if playerIdReqUnmarshalErr != nil {
+		log.Fatalf("Error while unmarshaling getPlayerIdentityFromTwitchId: %s", playerIdReqUnmarshalErr)
+		return ""
+	}
+
+	return playerIdentity.PlayerId
+}
+
+func getPlayerIdFromTwitchId(userId string) string {
+	userUrl := "https://collective-production.up.railway.app/getPlayerIdentityFromTwitchId/" + userId
+	playerIdReq, playerIdReqErr := http.Get(userUrl)
+	if playerIdReqErr != nil {
+		log.Fatalf("Couldn't get player-id from twitch-id for: %s", userId)
+		return ""
+	}
+	defer playerIdReq.Body.Close()
+	// read body
+	playerIdReqBody, err := io.ReadAll(playerIdReq.Body)
+	if err != nil {
+		log.Fatalf("impossible to read all body of response: %s", err)
+		return ""
+	}
+
+	playerIdentity := GetPlayerIdentityFromTwitchId{}
+	playerIdReqUnmarshalErr := json.Unmarshal(playerIdReqBody, &playerIdentity)
+	if playerIdReqUnmarshalErr != nil {
+		log.Fatalf("Error while unmarshaling getPlayerIdentityFromTwitchId: %s", playerIdReqUnmarshalErr)
+		return ""
+	}
+
+	return playerIdentity.PlayerId
+}
+
+func getTwitchIdFromChannel(channel string, client *helix.Client) string {
+	resp, err := client.GetUsers(&helix.UsersParams{
+		Logins: []string{channel},
+	})
+
+	if err != nil {
+		log.Fatalf("Issue getting twitch id from channel... %s", err)
+	}
+
+	if len(resp.Data.Users) > 0 {
+		return resp.Data.Users[0].ID
+	}
+	return ""
 }
