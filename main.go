@@ -314,13 +314,13 @@ func main() {
 			return
 		}
 
-		if strings.Contains(message.Message, "!spectrestats") {
-			twitchMessage := fmt.Sprintf("Use !crewstats to get %s's crew stats & !mycrewstats to get your own crew stats. !spectrestats will be re-implemented when ranked drops on Sept 10th.", message.Channel)
+		if strings.Contains(message.Message, "!spectrestats") || strings.Contains(message.Message, "!santaigg") {
+			twitchMessage := fmt.Sprintf("Use !crewstats to get %s's crew stats & !mycrewstats to get your own crew stats. !rank for %s's rank, and !myrank for yours.", message.Channel, message.Channel)
 			irc_client.Reply(message.Channel, message.ID, twitchMessage)
 		}
 	})
 
-	irc_client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "relyks", "shroud", "iitztimmy", "pieman", "shrood", "omegatooyew")
+	irc_client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "relyks", "shroud", "iitztimmy", "pieman", "shrood", "omegatooyew", "bixle", "equustv")
 
 	app := fiber.New()
 
@@ -464,6 +464,9 @@ func getPlayerIdFromChannel(channel string, client *helix.Client) string {
 	}
 	if channel == "shrood" {
 		playerId = "CE4C88F7-7D66-417F-A3F5-01D0F9F52B90"
+	}
+	if channel == "bixle" {
+		playerId = "acc53a25-d944-4853-bcbf-f03526885008"
 	}
 
 	if playerId != "" {
