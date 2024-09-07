@@ -469,6 +469,10 @@ func getPlayerIdFromChannel(channel string, client *helix.Client) string {
 		playerId = "acc53a25-d944-4853-bcbf-f03526885008"
 	}
 
+	if channel == "just9n" {
+		playerId = "1dbe12d4-b170-4d1b-bea0-63be2b72f410"
+	}
+
 	if playerId != "" {
 		return playerId
 	}
