@@ -336,7 +336,7 @@ func main() {
 				log.Fatalf("Issue while unmarshalling json response from player rank data endpoint. %s", err)
 			}
 
-			twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s | [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getTeamRankFromRankNumber(playerRankData.TeamRank))
+			twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s  [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getTeamRankFromRankNumber(playerRankData.TeamRank))
 			client.Reply(message.Channel, message.ID, twitchMessage)
 			return
 		}
@@ -389,7 +389,7 @@ func main() {
 				log.Fatalf("Issue while unmarshalling json response from player rank data endpoint. %s", err)
 			}
 
-			twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s | [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getTeamRankFromRankNumber(playerRankData.TeamRank))
+			twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s  [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getTeamRankFromRankNumber(playerRankData.TeamRank))
 			client.Reply(message.Channel, message.ID, twitchMessage)
 			return
 		}
