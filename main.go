@@ -320,7 +320,7 @@ func main() {
 		}
 	})
 
-	irc_client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "relyks", "shroud", "pieman", "shrood", "omegatooyew", "bixle", "equustv", "just9n")
+	irc_client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "shroud", "pieman", "shrood", "omegatooyew", "bixle", "equustv", "just9n")
 
 	app := fiber.New()
 
