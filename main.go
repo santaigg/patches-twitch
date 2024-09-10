@@ -37,8 +37,10 @@ type GetPlayerRank struct {
 }
 
 type PlayerRank struct {
-	SoloRank int `json:"soloRank"`
-	TeamRank int `json:"teamRank"`
+	SoloRank                    int `json:"soloRank"`
+	TeamRank                    int `json:"teamRank"`
+	SoloLeaderboardRank         int `json:"soloLeaderboardRank"`
+	SoloLeaderboardTotalPlayers int `json:"soloLeaderboardTotalPlayers"`
 }
 
 type MatchmakingData struct {
@@ -285,8 +287,12 @@ func main() {
 			if playerRankDataUnmarshalErr != nil {
 				log.Fatalf("Issue while unmarshalling json response from player rank data endpoint. %s", err)
 			}
-
-			twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s  [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getTeamRankFromRankNumber(playerRankData.TeamRank))
+			if playerRankData.SoloLeaderboardRank == 0 {
+				twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getTeamRankFromRankNumber(playerRankData.TeamRank))
+				irc_client.Reply(message.Channel, message.ID, twitchMessage)
+				return
+			}
+			twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s (Leaderboard Rank %d) [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), playerRankData.SoloLeaderboardRank, getTeamRankFromRankNumber(playerRankData.TeamRank))
 			irc_client.Reply(message.Channel, message.ID, twitchMessage)
 			return
 		}
@@ -321,7 +327,12 @@ func main() {
 				log.Fatalf("Issue while unmarshalling json response from player rank data endpoint. %s", err)
 			}
 
-			twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s  [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getTeamRankFromRankNumber(playerRankData.TeamRank))
+			if playerRankData.SoloLeaderboardRank == 0 {
+				twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getTeamRankFromRankNumber(playerRankData.TeamRank))
+				irc_client.Reply(message.Channel, message.ID, twitchMessage)
+				return
+			}
+			twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s (Leaderboard Rank %d) [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), playerRankData.SoloLeaderboardRank, getTeamRankFromRankNumber(playerRankData.TeamRank))
 			irc_client.Reply(message.Channel, message.ID, twitchMessage)
 			return
 		}
