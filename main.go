@@ -116,6 +116,18 @@ func main() {
 			return
 		}
 
+		// Check the game before processing commands
+		game, err := getChannelGame(message.Channel, twitch_client)
+		if err != nil {
+			log.Printf("Error checking game for channel %s: %v", message.Channel, err)
+			return
+		}
+
+		if game != "Spectre Divide" {
+			// If the game is not Spectre Divide, don't process the commands
+			return
+		}
+
 		if strings.Contains(message.Message, "!mycrewstats") {
 			var playerId string
 			playerIdReq := getPlayerIdFromTwitchId(message.User.ID)
@@ -544,4 +556,19 @@ func getTwitchIdFromChannel(channel string, client *helix.Client) string {
 		return resp.Data.Users[0].ID
 	}
 	return ""
+}
+
+func getChannelGame(channelName string, client *helix.Client) (string, error) {
+	resp, err := client.GetStreams(&helix.StreamsParams{
+		UserLogins: []string{channelName},
+	})
+	if err != nil {
+		return "", fmt.Errorf("error getting stream info: %w", err)
+	}
+
+	if len(resp.Data.Streams) > 0 {
+		return resp.Data.Streams[0].GameName, nil
+	}
+
+	return "", fmt.Errorf("channel not live or not found")
 }
