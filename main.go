@@ -452,51 +452,52 @@ func getTeamRankFromRankNumber(rankNumber int) string {
 
 func getPlayerIdFromChannel(channel string, client *helix.Client) string {
 	var playerId string
-	if channel == "ethos" {
+
+	var channelName = strings.ToLower(channel)
+
+	if channelName == "ethos" {
 		playerId = "E27C1FD1-4EEB-483D-952D-A7C904869509"
 	}
-	if channel == "truo" {
+	if channelName == "truo" {
 		playerId = "8D02F2C0-69B8-4CEE-9656-2D0866B44E9B"
 	}
-	if channel == "staycationtg" {
+	if channelName == "staycationtg" {
 		playerId = "F0CD9516-6DFB-4235-8E04-32D6B820754C"
 	}
-	if channel == "bugzvii" {
+	if channelName == "bugzvii" {
 		playerId = "30C3E8E8-B5A4-4461-B77C-567B9B3C762D"
 	}
-	if channel == "steazecs" {
+	if channelName == "steazecs" {
 		playerId = "BCD9F729-DA28-4802-8CF6-DE831B852D62"
 	}
-	if channel == "moepork" {
+	if channelName == "moepork" {
 		playerId = "39F848C1-A9A5-42DF-81AA-033191455DAA"
 	}
-	if channel == "relyks" {
+	if channelName == "relyks" {
 		playerId = "DC5D1993-5B94-4F0C-8F57-DB51B0DAE7F1"
 	}
-	if channel == "shroud" {
+	if channelName == "shroud" {
 		playerId = "CE4C88F7-7D66-417F-A3F5-01D0F9F52B90"
 	}
-	if channel == "iitztimmy" {
+	if channelName == "iitztimmy" {
 		playerId = "1d36bff3-1ac5-422f-bb21-f6524e0b83a0"
 	}
-	if channel == "pieman" {
+	if channelName == "pieman" {
 		playerId = "a666813a-5cc1-48ac-bcdf-ac937bda38bf"
 	}
-	if channel == "omegatooyew" {
+	if channelName == "omegatooyew" {
 		playerId = "8edc5a72-933c-412a-af09-51f587099e89"
 	}
-	if channel == "shrood" {
+	if channelName == "shrood" {
 		playerId = "CE4C88F7-7D66-417F-A3F5-01D0F9F52B90"
 	}
-	if channel == "bixle" {
+	if channelName == "bixle" {
 		playerId = "acc53a25-d944-4853-bcbf-f03526885008"
 	}
-
-	if channel == "just9n" {
+	if channelName == "just9n" {
 		playerId = "1dbe12d4-b170-4d1b-bea0-63be2b72f410"
 	}
-
-	if channel == "itsfjc" {
+	if channelName == "itsfjc" {
 		playerId = "70d09a36-08c7-4124-999b-7b282ff7f948"
 	}
 
