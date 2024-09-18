@@ -343,7 +343,7 @@ func main() {
 		}
 	})
 
-	irc_client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "shroud", "pieman", "shrood", "omegatooyew", "bixle", "equustv", "just9n", "enerbewow", "guccirushx", "k22g", "collinwth", "pr1ofps")
+	irc_client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "shroud", "pieman", "shrood", "omegatooyew", "bixle", "equustv", "just9n", "enerbewow", "guccirushx", "k22g", "collinwth", "pr1ofps", "itsfjc")
 
 	app := fiber.New()
 
@@ -494,6 +494,10 @@ func getPlayerIdFromChannel(channel string, client *helix.Client) string {
 
 	if channel == "just9n" {
 		playerId = "1dbe12d4-b170-4d1b-bea0-63be2b72f410"
+	}
+
+	if channel == "itsfjc" {
+		playerId = "70d09a36-08c7-4124-999b-7b282ff7f948"
 	}
 
 	if playerId != "" {
