@@ -343,7 +343,7 @@ func main() {
 		}
 	})
 
-	irc_client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "shroud", "pieman", "shrood", "omegatooyew", "bixle", "equustv", "just9n", "enerbewow", "guccirushx", "k22g", "collinwth", "pr1ofps", "itsfjc")
+	irc_client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "shroud", "pieman", "shrood", "omegatooyew", "bixle", "equustv", "just9n", "enerbewow", "guccirushx", "k22g", "collinwth", "pr1ofps", "itsfjc", "pqstreams")
 
 	app := fiber.New()
 
