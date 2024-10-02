@@ -365,7 +365,7 @@ func main() {
 					irc_client.Reply(message.Channel, message.ID, messageReply)
 					return
 				}
-
+				irc_client.Reply(message.Channel, message.ID, "Getting stats...")
 				stats, err := getPlayerMatchHistoryStats(playerId)
 				if err != nil {
 					log.Printf("Error getting player match history stats for: %s", message.Channel)
