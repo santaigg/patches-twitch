@@ -371,7 +371,8 @@ func main() {
 					log.Printf("Error getting player match history stats for: %s", message.Channel)
 					return
 				}
-				twitchMessage := fmt.Sprintf("[Win Rate]: %.2f%% [Average KDA]: %.2f [Total Games]: %d [Total Wins]: %d [Total Losses]: %d [Total Surrenders]: %d [Total Kills]: %d [Total Deaths]: %d [Total Assists]: %d", stats.WinRate, stats.AverageKDA, stats.TotalGames, stats.TotalWins, stats.TotalLosses, stats.TotalSurrenders, stats.TotalKills, stats.TotalDeaths, stats.TotalAssists)
+				// Message: 55/105 Games Won (52.38%) - Total KDA 1.23 - 1000 Kills, 1000 Deaths, 1000 Assists
+				twitchMessage := fmt.Sprintf("[%d/%d Games Won (%.2f%%)] - [Total KDA %.2f] - [%d Kills, %d Deaths, %d Assists]", stats.TotalWins, stats.TotalGames, stats.WinRate, stats.AverageKDA, stats.TotalKills, stats.TotalDeaths, stats.TotalAssists)
 				irc_client.Reply(message.Channel, message.ID, twitchMessage)
 			}
 		}
