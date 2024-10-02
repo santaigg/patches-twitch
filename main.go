@@ -85,6 +85,23 @@ type PlayerCrewData struct {
 	CrewTotalCrews      int    `json:"crewTotalCrews"`
 }
 
+type PlayerMatchHistoryStats struct {
+	WinRate         float64 `json:"winRate"`
+	AverageKDA      float64 `json:"averageKDA"`
+	TotalGames      int     `json:"totalGames"`
+	TotalWins       int     `json:"totalWins"`
+	TotalLosses     int     `json:"totalLosses"`
+	TotalSurrenders int     `json:"totalSurrenders"`
+	TotalKills      int     `json:"totalKills"`
+	TotalDeaths     int     `json:"totalDeaths"`
+	TotalAssists    int     `json:"totalAssists"`
+}
+
+type PlayerMatchDumpResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
 func main() {
 	//client := twitch.NewAnonymousClient()
 
@@ -337,13 +354,35 @@ func main() {
 			return
 		}
 
+		if strings.Contains(message.Message, "!stats") {
+			if message.Channel == "truo" || message.Channel == "trunkznopants" {
+				var playerId string
+				playerIdReq := getPlayerIdFromChannel(message.Channel, twitch_client)
+				if playerIdReq != "ERROR" && playerIdReq != "" {
+					playerId = playerIdReq
+				} else {
+					messageReply := fmt.Sprintf("@%s must link their Spectre Divide account to Twitch!", message.Channel)
+					irc_client.Reply(message.Channel, message.ID, messageReply)
+					return
+				}
+
+				stats, err := getPlayerMatchHistoryStats(playerId)
+				if err != nil {
+					log.Printf("Error getting player match history stats for: %s", message.Channel)
+					return
+				}
+				twitchMessage := fmt.Sprintf("[Win Rate]: %.2f%% [Average KDA]: %.2f [Total Games]: %d [Total Wins]: %d [Total Losses]: %d [Total Surrenders]: %d [Total Kills]: %d [Total Deaths]: %d [Total Assists]: %d", stats.WinRate, stats.AverageKDA, stats.TotalGames, stats.TotalWins, stats.TotalLosses, stats.TotalSurrenders, stats.TotalKills, stats.TotalDeaths, stats.TotalAssists)
+				irc_client.Reply(message.Channel, message.ID, twitchMessage)
+			}
+		}
+
 		if strings.Contains(message.Message, "!spectrestats") || strings.Contains(message.Message, "!santaigg") {
 			twitchMessage := fmt.Sprintf("Use !crewstats to get %s's crew stats & !mycrewstats to get your own crew stats. !rank for %s's rank, and !myrank for yours.", message.Channel, message.Channel)
 			irc_client.Reply(message.Channel, message.ID, twitchMessage)
 		}
 	})
 
-	irc_client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "shroud", "pieman", "shrood", "omegatooyew", "bixle", "equustv", "just9n", "enerbewow", "guccirushx", "k22g", "collinwth", "pr1ofps", "itsfjc", "pqstreams", "noctopusfps", "pigeonr6")
+	irc_client.Join("truo", "limitediq__", "staycationtg", "ethos", "bugzvii", "steazecs", "moepork", "shroud", "pieman", "shrood", "omegatooyew", "bixle", "equustv", "just9n", "enerbewow", "guccirushx", "k22g", "collinwth", "pr1ofps", "itsfjc", "pqstreams", "noctopusfps", "pigeonr6", "trunkznopants")
 
 	app := fiber.New()
 
@@ -500,6 +539,9 @@ func getPlayerIdFromChannel(channel string, client *helix.Client) string {
 	if channelName == "itsfjc" {
 		playerId = "70d09a36-08c7-4124-999b-7b282ff7f948"
 	}
+	if channelName == "trunkznopants" {
+		playerId = "13a0d995-c198-4235-81b8-e9ddd17f8ff4"
+	}
 
 	if playerId != "" {
 		return playerId
@@ -587,4 +629,36 @@ func getChannelGame(channelName string, client *helix.Client) (string, error) {
 	}
 
 	return "", fmt.Errorf("channel not live or not found")
+}
+
+func getPlayerMatchHistoryStats(playerId string) (PlayerMatchHistoryStats, error) {
+	dumpResp, err := http.Get("https://smokeshift-production.up.railway.app/data-dump-service/dump-player-matches/" + playerId)
+	if err != nil {
+		return PlayerMatchHistoryStats{}, fmt.Errorf("error getting player match history stats: %w", err)
+	}
+	defer dumpResp.Body.Close()
+
+	var playerMatchDumpResponse PlayerMatchDumpResponse
+	err = json.NewDecoder(dumpResp.Body).Decode(&playerMatchDumpResponse)
+	if err != nil {
+		return PlayerMatchHistoryStats{}, fmt.Errorf("error decoding player match history: %w", err)
+	}
+
+	if !playerMatchDumpResponse.Success {
+		return PlayerMatchHistoryStats{}, fmt.Errorf("error getting player match history stats: %s", playerMatchDumpResponse.Message)
+	}
+
+	resp, err := http.Get("https://smokeshift-production.up.railway.app/api/v1/player-match-history-stats/" + playerId)
+	if err != nil {
+		return PlayerMatchHistoryStats{}, fmt.Errorf("error getting player match history stats: %w", err)
+	}
+	defer resp.Body.Close()
+
+	var stats PlayerMatchHistoryStats
+	err = json.NewDecoder(resp.Body).Decode(&stats)
+	if err != nil {
+		return PlayerMatchHistoryStats{}, fmt.Errorf("error decoding player match history stats: %w", err)
+	}
+
+	return stats, nil
 }
