@@ -313,6 +313,35 @@ func main() {
 			if playerRankDataUnmarshalErr != nil {
 				log.Fatalf("Issue while unmarshalling json response from player rank data endpoint. %s", err)
 			}
+
+			// Temporary Alt Tracker for Truo
+			if message.Channel == "truo" {
+				playerId2 := "cf8a021b-505f-4b83-94e7-00cc4e2e962f"
+				respUrl2 := "https://collective-production.up.railway.app/getPlayerRankData/" + playerId2
+				resp2, err := http.Get(respUrl2)
+				if err != nil {
+					log.Fatalf("Couldn't get player rank data for playerId: %s", playerId2)
+				}
+
+				defer resp2.Body.Close()
+				playerRankBody2, err := io.ReadAll(resp2.Body)
+				if err != nil {
+					log.Fatalf("Issue while reading body of resp: %s", err)
+					return
+				}
+				playerRankData2 := PlayerRank{}
+				json.Unmarshal(playerRankBody2, &playerRankData2)
+
+				if playerRankData.SoloLeaderboardRank == 0 || playerRankData.SoloRank == 29 {
+					twitchMessage := fmt.Sprintf("[Main Rank]: %s [Solo-Only Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getSoloRankFromRankNumber(playerRankData2.SoloRank))
+					irc_client.Reply(message.Channel, message.ID, twitchMessage)
+					return
+				}
+				twitchMessage := fmt.Sprintf("[Main Rank]: %s [~#%d Leaderboard] [Solo-Only Rank]: %s [~#%d Leaderboard]", getSoloRankFromRankNumber(playerRankData.SoloRank), playerRankData.SoloLeaderboardRank, getSoloRankFromRankNumber(playerRankData2.SoloRank), playerRankData2.SoloLeaderboardRank)
+				irc_client.Reply(message.Channel, message.ID, twitchMessage)
+				return
+			}
+
 			if playerRankData.SoloLeaderboardRank == 0 || playerRankData.SoloRank == 29 {
 				twitchMessage := fmt.Sprintf("[Current Solo Rank]: %s [Highest Team Rank]: %s", getSoloRankFromRankNumber(playerRankData.SoloRank), getTeamRankFromRankNumber(playerRankData.TeamRank))
 				irc_client.Reply(message.Channel, message.ID, twitchMessage)
