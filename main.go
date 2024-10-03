@@ -102,6 +102,15 @@ type PlayerMatchDumpResponse struct {
 	Message string `json:"message"`
 }
 
+type LastMatchStatsResponse struct {
+	Kills      int `json:"kills"`
+	Deaths     int `json:"deaths"`
+	Assists    int `json:"assists"`
+	Damage     int `json:"damage"`
+	RoundsWon  int `json:"roundsWon"`
+	RoundsLost int `json:"roundsLost"`
+}
+
 func main() {
 	//client := twitch.NewAnonymousClient()
 
@@ -375,6 +384,67 @@ func main() {
 				twitchMessage := fmt.Sprintf("%d/%d Games Won (%.2f%%) - Avg KDA %.2f - (%d Kills, %d Deaths, %d Assists)", stats.TotalWins, stats.TotalGames, stats.WinRate*100, stats.AverageKDA, stats.TotalKills, stats.TotalDeaths, stats.TotalAssists)
 				irc_client.Reply(message.Channel, message.ID, twitchMessage)
 			}
+		}
+
+		if strings.Contains(message.Message, "!lastmatch") {
+			var playerId string
+			playerIdReq := getPlayerIdFromChannel(message.Channel, twitch_client)
+			if playerIdReq != "ERROR" && playerIdReq != "" {
+				playerId = playerIdReq
+			} else {
+				messageReply := fmt.Sprintf("@%s must link their Spectre Divide account to Twitch!", message.Channel)
+				irc_client.Reply(message.Channel, message.ID, messageReply)
+				return
+			}
+
+			dumpResp, err := http.Get("https://smokeshift-production.up.railway.app/data-dump-service/dump-player-matches/" + playerId)
+			if err != nil {
+				log.Printf("Error getting player match history stats for: %s", playerId)
+				return
+			}
+			defer dumpResp.Body.Close()
+
+			var playerMatchDumpResponse PlayerMatchDumpResponse
+			err = json.NewDecoder(dumpResp.Body).Decode(&playerMatchDumpResponse)
+			if err != nil {
+				log.Printf("Error decoding player match history: %s", err)
+				return
+			}
+
+			if !playerMatchDumpResponse.Success {
+				log.Printf("Error getting player match history stats: %s", playerMatchDumpResponse.Message)
+				return
+			}
+
+			lastMatchUrl := "https://smokeshift-production.up.railway.app/api/v1/last-match-stats/" + playerId
+			lastMatchResp, err := http.Get(lastMatchUrl)
+			if err != nil {
+				log.Printf("Error getting last match stats for: %s", playerId)
+				return
+			}
+			defer lastMatchResp.Body.Close()
+
+			lastMatchBody, err := io.ReadAll(lastMatchResp.Body)
+			if err != nil {
+				log.Printf("Error reading last match stats body for: %s", playerId)
+				return
+			}
+
+			var lastMatchStatsResponse LastMatchStatsResponse
+			err = json.Unmarshal(lastMatchBody, &lastMatchStatsResponse)
+			if err != nil {
+				log.Printf("Error unmarshalling last match stats for: %s", playerId)
+				return
+			}
+
+			twitchMessage := fmt.Sprintf("Last match: %d kills, %d deaths, %d assists, %d damage, %d rounds won, %d rounds lost",
+				lastMatchStatsResponse.Kills,
+				lastMatchStatsResponse.Deaths,
+				lastMatchStatsResponse.Assists,
+				lastMatchStatsResponse.Damage,
+				lastMatchStatsResponse.RoundsWon,
+				lastMatchStatsResponse.RoundsLost)
+			irc_client.Reply(message.Channel, message.ID, twitchMessage)
 		}
 
 		if strings.Contains(message.Message, "!spectrestats") || strings.Contains(message.Message, "!santaigg") {
