@@ -372,7 +372,7 @@ func main() {
 					return
 				}
 				// Message: 55/105 Games Won (52.38%) - Total KDA 1.23 - 1000 Kills, 1000 Deaths, 1000 Assists
-				twitchMessage := fmt.Sprintf("[%d/%d Games Won (%.2f%%)] - [Total KDA %.2f] - [%d Kills, %d Deaths, %d Assists]", stats.TotalWins, stats.TotalGames, stats.WinRate, stats.AverageKDA, stats.TotalKills, stats.TotalDeaths, stats.TotalAssists)
+				twitchMessage := fmt.Sprintf("%d/%d Games Won (%.2f%%) - Avg KDA %.2f - (%d Kills, %d Deaths, %d Assists)", stats.TotalWins, stats.TotalGames, stats.WinRate*100, stats.AverageKDA, stats.TotalKills, stats.TotalDeaths, stats.TotalAssists)
 				irc_client.Reply(message.Channel, message.ID, twitchMessage)
 			}
 		}
