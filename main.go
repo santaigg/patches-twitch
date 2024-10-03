@@ -397,6 +397,9 @@ func main() {
 				return
 			}
 
+			// Reply to message with "Getting last match..."
+			irc_client.Reply(message.Channel, message.ID, "Getting last match...")
+
 			dumpResp, err := http.Get("https://smokeshift-production.up.railway.app/data-dump-service/dump-player-matches/" + playerId)
 			if err != nil {
 				log.Printf("Error getting player match history stats for: %s", playerId)
