@@ -156,6 +156,11 @@ func main() {
 			return
 		}
 
+		// Ignore messages from nightbot
+		if message.User.Name == "nightbot" {
+			return
+		}
+
 		if strings.Contains(message.Message, "!mycrewstats") {
 			var playerId string
 			playerIdReq := getPlayerIdFromTwitchId(message.User.ID)
