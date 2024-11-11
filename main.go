@@ -318,7 +318,7 @@ func main() {
 			if playerRankDataUnmarshalErr != nil {
 				log.Fatalf("Issue while unmarshalling json response from player rank data endpoint. %s", err)
 			}
-
+			// t
 			// Temporary Alt Tracker for Truo
 			if message.Channel == "truo" {
 				playerId2 := "cf8a021b-505f-4b83-94e7-00cc4e2e962f"
@@ -482,6 +482,47 @@ func main() {
 				lastMatchStatsResponse.RoundsWon,
 				lastMatchStatsResponse.RoundsLost)
 			irc_client.Reply(message.Channel, message.ID, twitchMessage)
+		}
+
+		if strings.Contains(message.Message, "!winstreak") {
+			var playerId string
+			playerIdReq := getPlayerIdFromChannel(message.Channel, twitch_client)
+			if playerIdReq != "ERROR" && playerIdReq != "" {
+				playerId = playerIdReq
+			} else {
+				messageReply := fmt.Sprintf("@%s must link their Spectre Divide account to Twitch!", message.Channel)
+				irc_client.Reply(message.Channel, message.ID, messageReply)
+				return
+			}
+
+			// Reply to message with "Getting last match..."
+			irc_client.Reply(message.Channel, message.ID, "Getting win streak...")
+
+			dumpResp, err := http.Get("https://smokeshift-production.up.railway.app/data-dump-service/dump-player-matches/" + playerId)
+			if err != nil {
+				log.Printf("Error getting player match history stats for: %s", playerId)
+				return
+			}
+			defer dumpResp.Body.Close()
+
+			var playerMatchDumpResponse PlayerMatchDumpResponse
+			err = json.NewDecoder(dumpResp.Body).Decode(&playerMatchDumpResponse)
+			if err != nil {
+				log.Printf("Error decoding player match history: %s", err)
+				return
+			}
+
+			if !playerMatchDumpResponse.Success {
+				log.Printf("Error getting player match history stats: %s", playerMatchDumpResponse.Message)
+				return
+			}
+
+			stats, err := getPlayerMatchHistoryStats(playerId)
+			if err != nil {
+				log.Printf("Error getting player match history stats for: %s", message.Channel)
+				return
+			}
+
 		}
 
 		if strings.Contains(message.Message, "!spectrestats") || strings.Contains(message.Message, "!santaigg") {
