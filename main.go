@@ -517,7 +517,7 @@ func main() {
 				return
 			}
 
-			stats, err := getPlayerMatchHistoryStats(playerId)
+			_, err = getPlayerMatchHistoryStats(playerId)
 			if err != nil {
 				log.Printf("Error getting player match history stats for: %s", message.Channel)
 				return
